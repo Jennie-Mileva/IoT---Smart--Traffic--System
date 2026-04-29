@@ -1,93 +1,87 @@
-# IoT Smart Traffic Management System — Team 3 (Upgraded)
+# IoT Smart Traffic Management System
 
-## What's New (Review 2 Upgrades)
+A Python + Flask simulation of an IoT-powered smart traffic system with real-time congestion detection, dynamic signal control, A* pathfinding, heatmap visualization, and automatic re-routing.
 
-| Feature | Original | Upgraded |
-|---------|----------|---------|
-| Backend | Print-only simulation | Flask REST API |
-| Routing Algorithm | Simple filter | **A* Pathfinding** |
-| Data Source | Random only | **TomTom API simulation** (real API-ready) |
-| Frontend connection | None (independent) | **Fully connected via polling** |
-| Heatmap | ❌ | **✅ Canvas heatmap** |
-| Re-routing UI | Terminal only | **Live route status badges** |
-| A* UI | ❌ | **✅ Interactive A* tool** |
+## Features
 
----
+- Real-time Monitoring across 4 intersections (I-A, I-B, I-C, I-D)
+- Congestion Classification — LOW / MEDIUM / HIGH
+- Dynamic Signal Control — adjusts green light timing based on vehicle density
+- A* Pathfinding Algorithm — finds the least-congested route between intersections
+- Auto Re-routing — diverts traffic when congestion is detected
+- Traffic Heatmap — visual intensity map of all intersections
+- TomTom API Integration — real-time traffic data ingestion (simulated)
+- Live Dashboard — fully connected frontend with charts, event log, and controls
+- Emergency Vehicle Handling — overrides signals and clears corridor
+
+## Files
+
+```
+├── app.py            ← Flask backend (run this first)
+├── dashboard.html    ← Frontend dashboard (open in browser)
+└── README.md
+```
 
 ## How to Run
 
 ### 1. Install dependencies
 ```bash
-pip3 install flask flask-cors
+pip install flask flask-cors
 ```
 
-### 2. Start the backend
+### 2. Run backend
 ```bash
-python3 app.py
+python app.py
 ```
-You'll see: `API running at: http://localhost:5000`
 
-### 3. Open the dashboard
-Open `dashboard.html` in your browser (double-click it).
+### 3. Open dashboard
+Double-click `dashboard.html` in your file explorer to open it in the browser.
 
-> **Note:** Both must run at the same time. The dashboard polls the backend every 1 second.
+> Both `app.py` and `dashboard.html` must be running at the same time.
 
----
+## Algorithms
+
+### Threshold Classification
+```
+volume < 50  → LOW    → 30s green signal
+volume < 80  → MEDIUM → 45s green signal
+volume ≥ 80  → HIGH   → 60s green signal + auto re-routing
+```
+
+### Dynamic Signal Timing
+Signal duration is demand-based — adjusts automatically based on live vehicle density instead of fixed timers.
+
+### A* Pathfinding
+Finds the optimal (least-congested) path between any two intersections. Edge weights increase dynamically based on current traffic volume:
+```
+edge_weight = base_distance + (volume / 10)
+```
+
+### Auto Re-routing
+When an intersection hits HIGH congestion, the system identifies all routes not passing through that node and diverts traffic accordingly.
+
+### TomTom API
+In production, replace the `tomtom_simulate()` function with a real TomTom Traffic Flow API call:
+```python
+requests.get(
+    "https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json",
+    params={"key": YOUR_API_KEY, "point": f"{lat},{lng}"}
+)
+```
 
 ## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/status` | All intersection data + routes + events |
+| GET | `/api/status` | All intersection data, routes, and events |
 | GET | `/api/heatmap` | Heatmap node data with intensity values |
 | GET | `/api/history` | Time-series volume data for chart |
-| POST | `/api/astar` | Run A* from `{start, goal}` |
+| POST | `/api/astar` | Run A* between `{start, goal}` |
 | POST | `/api/emergency` | Trigger emergency vehicle at `{intersection}` |
-| POST | `/api/congestion` | Spike volume at `{intersection}` |
-| POST | `/api/pause` | Toggle pause |
-| POST | `/api/reset` | Reset simulation |
+| POST | `/api/congestion` | Spike traffic volume at `{intersection}` |
+| POST | `/api/pause` | Toggle pause/resume |
+| POST | `/api/reset` | Reset simulation to initial state |
 
----
+## Team
 
-## Algorithms
-
-### Algorithm 1: Threshold Classification
-```
-volume < 50  → LOW    (30s green)
-volume < 80  → MEDIUM (45s green)
-volume ≥ 80  → HIGH   (60s green + rerouting)
-```
-
-### Algorithm 2: Dynamic Signal Timing
-Signal duration is demand-based, not fixed-timer.
-
-### Algorithm 3: Simple Re-routing
-Finds all routes NOT passing through the congested node.
-
-### Algorithm 4: A* Pathfinding
-- Builds a dynamic cost graph where congested nodes have higher edge weights
-- `weight = base_distance + (volume / 10)`
-- Uses Euclidean distance as heuristic
-- Always finds the least-congested path
-
-### TomTom API (Simulated)
-In production, replace `tomtom_simulate()` with:
-```python
-import requests
-res = requests.get(
-    "https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json",
-    params={"key": YOUR_KEY, "point": f"{lat},{lng}"}
-)
-volume = res.json()['flowSegmentData']['currentSpeed']
-```
-
----
-
-## Files
-
-```
-smart_traffic/
-├── app.py           ← Flask backend (run this)
-├── dashboard.html   ← Frontend (open this in browser)
-└── README.md
-```
+Team 3 — IoT Based Smart Traffic System with Congestion Forecasting
