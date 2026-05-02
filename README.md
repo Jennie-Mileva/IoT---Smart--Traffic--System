@@ -1,4 +1,4 @@
-# IoT Smart Traffic Management System
+# IoT Smart Traffic Management System Team -3
 
 A Python + Flask simulation of an IoT-powered smart traffic system with real-time congestion detection, dynamic signal control, A* pathfinding, heatmap visualization, and automatic re-routing.
 
