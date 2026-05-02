@@ -5,255 +5,333 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>IoT Smart Traffic System — Team 3</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@300;400;600;700&display=swap');
+:root {
+  --bg: #040b14;
+  --panel: #07111f;
+  --border: #112240;
+  --cyan: #00f5ff;
+  --green: #00ff9d;
+  --yellow: #f5c400;
+  --red: #ff3c5a;
+  --purple: #a855f7;
+  --text: #b8cce0;
+  --muted: #3d5a7a;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Rajdhani', sans-serif;
+  --glow-cyan: 0 0 12px #00f5ff55;
+  --glow-green: 0 0 12px #00ff9d55;
+  --glow-red: 0 0 12px #ff3c5a55;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
 
-  :root {
-    --bg:        #050d1a;
-    --panel:     #0a1628;
-    --border:    #1a2d50;
-    --cyan:      #00d4ff;
-    --green:     #00e5a0;
-    --yellow:    #ffd166;
-    --red:       #ff4757;
-    --purple:    #7c3aed;
-    --text:      #c8d8f0;
-    --muted:     #4a6080;
-    --mono:      'JetBrains Mono', monospace;
-    --sans:      'Space Grotesk', sans-serif;
-  }
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: rgba(7,17,31,0.95);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top:0; z-index:100;
+  backdrop-filter: blur(10px);
+}
+.logo { display:flex; align-items:center; gap:14px; }
+.logo-icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, #00f5ff22, #00f5ff11);
+  border: 1px solid var(--cyan);
+  border-radius: 8px;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 20px;
+  box-shadow: var(--glow-cyan);
+}
+.logo-text h1 { font-size:16px; font-weight:700; color:#fff; letter-spacing:1px; font-family: var(--sans); }
+.logo-text p { font-size:11px; color:var(--muted); font-family:var(--mono); }
+.header-right { display:flex; align-items:center; gap:16px; }
+.status-pill {
+  display:flex; align-items:center; gap:7px;
+  background:#041a0e; border:1px solid var(--green);
+  padding:5px 14px; border-radius:20px;
+  font-size:11px; font-family:var(--mono); color:var(--green);
+  box-shadow: var(--glow-green);
+}
+.dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation: pulse 1.5s infinite; }
+.dot.offline { background: var(--red); }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(0.8)} }
+.tick-counter { font-family:var(--mono); font-size:11px; color:var(--muted); }
 
-  * { margin:0; padding:0; box-sizing:border-box; }
+/* ── TOMTOM BADGE ── */
+.tomtom-badge {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--cyan); border: 1px solid var(--cyan);
+  padding: 3px 10px; border-radius: 4px;
+  letter-spacing: 1px;
+  background: rgba(0,245,255,0.05);
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* ── LAYOUT ── */
+.main { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; padding:18px 22px; }
+.col-full { grid-column: 1/-1; }
 
-  /* ── HEADER ── */
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 28px;
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-    position: sticky; top:0; z-index:100;
-  }
-  .logo { display:flex; align-items:center; gap:12px; }
-  .logo-icon { font-size:22px; }
-  .logo-text h1 { font-size:15px; font-weight:700; color:#fff; letter-spacing:.3px; }
-  .logo-text p  { font-size:11px; color:var(--muted); font-family:var(--mono); }
-  .header-right { display:flex; align-items:center; gap:16px; }
-  .status-pill {
-    display:flex; align-items:center; gap:6px;
-    background:#0d2a1a; border:1px solid var(--green);
-    padding:4px 12px; border-radius:20px;
-    font-size:11px; font-family:var(--mono); color:var(--green);
-  }
-  .dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-  .tick-counter { font-family:var(--mono); font-size:12px; color:var(--muted); }
+/* ── PANEL ── */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color .3s;
+}
+.panel:hover { border-color: #1e3a5f; }
+.panel-header {
+  display: flex; align-items:center; justify-content:space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10px; font-weight:700; letter-spacing:1.5px;
+  text-transform: uppercase; color: var(--muted);
+  font-family: var(--mono);
+}
+.panel-body { padding: 14px; }
 
-  /* ── LAYOUT ── */
-  .main { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; padding:20px 24px; }
-  .col-full { grid-column: 1/-1; }
-  .col-2    { grid-column: span 2; }
+/* ── STAT CARDS ── */
+.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px; }
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  position: relative; overflow: hidden;
+  transition: all .3s;
+}
+.stat-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--cyan), transparent);
+}
+.stat-card:hover { border-color: var(--cyan); box-shadow: var(--glow-cyan); }
+.stat-label { font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; font-family:var(--mono); }
+.stat-value { font-family:var(--mono); font-size:30px; font-weight:400; color:#fff; line-height:1; }
+.stat-sub { font-size:10px; color:var(--muted); margin-top:5px; font-family:var(--mono); }
 
-  /* ── PANEL ── */
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .panel-header {
-    display: flex; align-items:center; justify-content:space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    font-size: 11px; font-weight:700; letter-spacing:1.2px;
-    text-transform: uppercase; color: var(--muted);
-  }
-  .panel-body { padding: 16px; }
+/* ── BUTTONS ── */
+.btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.btn {
+  padding: 7px 14px; border-radius:5px; border:none; cursor:pointer;
+  font-family:var(--mono); font-size:11px; font-weight:400;
+  transition: all .2s; letter-spacing:.5px;
+}
+.btn-cyan { background: rgba(0,245,255,0.1); color:var(--cyan); border:1px solid var(--cyan); }
+.btn-cyan:hover { background: rgba(0,245,255,0.2); box-shadow: var(--glow-cyan); }
+.btn-red { background: rgba(255,60,90,0.1); color:var(--red); border:1px solid var(--red); }
+.btn-red:hover { background: rgba(255,60,90,0.2); box-shadow: var(--glow-red); }
+.btn-purple { background: rgba(168,85,247,0.1); color:var(--purple); border:1px solid var(--purple); }
+.btn-purple:hover { background: rgba(168,85,247,0.2); }
+.btn-ghost { background:transparent; border:1px solid var(--border); color:var(--text); }
+.btn-ghost:hover { border-color:var(--muted); }
 
-  /* ── STAT CARDS ── */
-  .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-  .stat-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-    transition: border-color .3s;
-  }
-  .stat-card:hover { border-color: var(--cyan); }
-  .stat-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
-  .stat-value { font-family:var(--mono); font-size:32px; font-weight:700; color:#fff; line-height:1; }
-  .stat-sub { font-size:11px; color:var(--muted); margin-top:4px; }
+/* ── INTERSECTION GRID ── */
+.intersection-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+}
+.intersection-card {
+  border-radius: 8px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  transition: all .3s;
+  position: relative;
+  overflow: hidden;
+  background: rgba(4,11,20,0.8);
+}
+.intersection-card::after {
+  content:''; position:absolute; bottom:0; right:0;
+  width:60px; height:60px;
+  border-radius:50%;
+  opacity: 0.05;
+  transition: opacity .3s;
+}
+.level-LOW { border-color:#0d2e1c; }
+.level-LOW::after { background: var(--green); }
+.level-MEDIUM { border-color:#2e2400; }
+.level-MEDIUM::after { background: var(--yellow); }
+.level-HIGH { border-color:#2e0d14; animation: redpulse 1.2s infinite; }
+.level-HIGH::after { background: var(--red); opacity:.1; }
+@keyframes redpulse { 0%,100%{border-color:#2e0d14} 50%{border-color:#ff3c5a88} }
+.i-name { font-size:9px; font-weight:400; letter-spacing:2px; color:var(--muted); font-family:var(--mono); }
+.i-location { font-size:9px; color:#1e3a5f; font-family:var(--mono); margin-bottom:4px; }
+.i-vol { font-family:var(--mono); font-size:36px; font-weight:400; margin:4px 0 2px; line-height:1; }
+.i-label { font-size:9px; color:var(--muted); font-family:var(--mono); }
+.i-level { font-size:10px; font-weight:700; margin-top:6px; letter-spacing:1px; font-family:var(--mono); }
+.i-signal { font-family:var(--mono); font-size:9px; color:var(--muted); }
+.i-speed { font-family:var(--mono); font-size:9px; color:var(--cyan); margin-top:2px; }
+.col-LOW { color: var(--green); }
+.col-MEDIUM { color: var(--yellow); }
+.col-HIGH { color: var(--red); }
 
-  /* ── BUTTONS ── */
-  .btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
-  .btn {
-    padding: 8px 16px; border-radius:6px; border:none; cursor:pointer;
-    font-family:var(--sans); font-size:12px; font-weight:600;
-    transition: all .2s; display:flex; align-items:center; gap:6px;
-  }
-  .btn-cyan   { background:var(--cyan); color:#000; }
-  .btn-red    { background:var(--red);  color:#fff; }
-  .btn-purple { background:var(--purple); color:#fff; }
-  .btn-ghost  { background:transparent; border:1px solid var(--border); color:var(--text); }
-  .btn:hover  { opacity:.85; transform:translateY(-1px); }
-  .btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+/* ── HEATMAP ── */
+.heatmap-wrap {
+  position: relative;
+  width: 100%; aspect-ratio:1.3;
+  background: #030810;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.heatmap-canvas { width:100%; height:100%; display:block; }
+.heatmap-legend {
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:9px; color:var(--muted); padding:6px 4px 0;
+  font-family: var(--mono);
+}
+.legend-bar {
+  flex:1; height:4px; border-radius:2px; margin:0 8px;
+  background: linear-gradient(to right, #00ff9d, #f5c400, #ff3c5a);
+}
 
-  /* ── INTERSECTION GRID ── */
-  .intersection-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 10px;
-    aspect-ratio: 1.5;
-  }
-  .intersection-card {
-    border-radius: 8px;
-    padding: 14px;
-    border: 1px solid var(--border);
-    transition: all .3s;
-    position: relative;
-    overflow: hidden;
-  }
-  .intersection-card::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:3px;
-  }
-  .level-LOW    { border-color:#1a3a2a; background:#060e14; }
-  .level-LOW::before { background: var(--green); }
-  .level-MEDIUM { border-color:#3a3010; background:#0e0c06; }
-  .level-MEDIUM::before { background: var(--yellow); }
-  .level-HIGH   { border-color:#3a1010; background:#0e0606; animation: redpulse 1s infinite; }
-  .level-HIGH::before { background: var(--red); }
-  @keyframes redpulse { 0%,100%{border-color:#3a1010} 50%{border-color:#ff4757} }
+/* ── ROUTES ── */
+.route-list { display:flex; flex-direction:column; gap:7px; }
+.route-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 9px 11px;
+  background: rgba(3,8,16,0.8);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size:11px;
+}
+.route-name { font-family:var(--mono); color:var(--cyan); font-size:10px; }
+.route-path { color:var(--muted); font-family:var(--mono); font-size:10px; }
+.route-badge {
+  padding:2px 8px; border-radius:3px; font-size:9px; font-weight:400;
+  text-transform:uppercase; letter-spacing:1px; font-family:var(--mono);
+}
+.badge-normal { background:rgba(0,255,157,0.1); color:var(--green); border:1px solid rgba(0,255,157,0.3); }
+.badge-rerouted { background:rgba(255,60,90,0.1); color:var(--red); border:1px solid rgba(255,60,90,0.3); }
+.badge-active { background:rgba(0,245,255,0.1); color:var(--cyan); border:1px solid rgba(0,245,255,0.3); }
 
-  .i-name   { font-size:11px; font-weight:700; letter-spacing:1px; color:var(--muted); }
-  .i-vol    { font-family:var(--mono); font-size:34px; font-weight:700; margin:4px 0 2px; }
-  .i-label  { font-size:10px; color:var(--muted); }
-  .i-level  { font-size:11px; font-weight:700; margin-top:6px; }
-  .i-signal { font-family:var(--mono); font-size:11px; color:var(--muted); }
-  .col-LOW    { color: var(--green); }
-  .col-MEDIUM { color: var(--yellow); }
-  .col-HIGH   { color: var(--red); }
+/* ── A* PANEL ── */
+.astar-form { display:flex; gap:8px; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
+.astar-form select {
+  background:#07111f; border:1px solid var(--border); color:var(--text);
+  padding:6px 10px; border-radius:5px; font-family:var(--mono); font-size:11px;
+}
+.astar-result {
+  background:rgba(3,8,16,0.9); border-radius:6px; padding:10px 12px;
+  font-family:var(--mono); font-size:11px;
+  border: 1px solid var(--border);
+  min-height:64px;
+}
+.path-node {
+  display:inline-flex; align-items:center; justify-content:center;
+  background:rgba(168,85,247,0.2); color:var(--purple); border:1px solid var(--purple);
+  width:34px; height:34px; border-radius:50%;
+  font-size:9px; font-weight:400; font-family:var(--mono);
+}
+.path-arrow { color:var(--cyan); font-size:16px; margin:0 3px; }
 
-  /* ── HEATMAP ── */
-  .heatmap-wrap {
-    position: relative;
-    width: 100%; aspect-ratio:1.2;
-    background: #060f1e;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .heatmap-canvas { width:100%; height:100%; display:block; }
-  .heatmap-legend {
-    display:flex; justify-content:space-between; align-items:center;
-    font-size:10px; color:var(--muted); padding:8px 4px 0;
-  }
-  .legend-bar {
-    flex:1; height:6px; border-radius:3px; margin:0 8px;
-    background: linear-gradient(to right, #00e5a0, #ffd166, #ff4757);
-  }
+/* ── CHART ── */
+.chart-wrap { position:relative; height:170px; }
 
-  /* ── ROUTES ── */
-  .route-list { display:flex; flex-direction:column; gap:8px; }
-  .route-item {
-    display:flex; align-items:center; justify-content:space-between;
-    padding: 10px 12px;
-    background: #070f1c;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    font-size:12px;
-  }
-  .route-name { font-family:var(--mono); font-weight:600; color:var(--cyan); }
-  .route-path { color:var(--muted); }
-  .route-badge {
-    padding:3px 9px; border-radius:12px; font-size:10px; font-weight:700;
-    text-transform:uppercase; letter-spacing:.5px;
-  }
-  .badge-normal   { background:#0a2a15; color:var(--green); }
-  .badge-rerouted { background:#2a0a0a; color:var(--red); }
-  .badge-active   { background:#0a1a2a; color:var(--cyan); }
+/* ── EVENT LOG ── */
+.log-wrap {
+  height:170px; overflow-y:auto;
+  background:rgba(3,8,16,0.9); border-radius:6px;
+  padding:8px;
+  border: 1px solid var(--border);
+}
+.log-wrap::-webkit-scrollbar { width:3px; }
+.log-wrap::-webkit-scrollbar-track { background:transparent; }
+.log-wrap::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.log-entry {
+  font-family:var(--mono); font-size:10px; padding:3px 0;
+  border-bottom:1px solid #07111f;
+  display:flex; gap:8px; align-items:flex-start;
+}
+.log-time { color:var(--muted); flex-shrink:0; }
+.log-INFO { color:var(--cyan); }
+.log-ALERT { color:var(--red); }
+.log-SUCCESS { color:var(--green); }
+.log-TOMTOM { color:var(--yellow); }
 
-  /* ── A* PANEL ── */
-  .astar-form { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
-  .astar-form select {
-    background:#0a1628; border:1px solid var(--border); color:var(--text);
-    padding:6px 10px; border-radius:6px; font-family:var(--sans); font-size:12px;
-  }
-  .astar-result {
-    background:#060f1e; border-radius:8px; padding:12px 14px;
-    font-family:var(--mono); font-size:12px;
-    border: 1px solid var(--border);
-    min-height:60px;
-  }
-  .path-node {
-    display:inline-flex; align-items:center; justify-content:center;
-    background:var(--purple); color:#fff;
-    width:36px; height:36px; border-radius:50%;
-    font-size:10px; font-weight:700;
-  }
-  .path-arrow { color:var(--cyan); font-size:18px; margin:0 4px; }
+/* ── LOADING OVERLAY ── */
+#loading {
+  position:fixed; inset:0; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:999; gap:16px;
+  font-family: var(--mono);
+}
+.loading-icon { font-size:48px; animation: spin 2s linear infinite; }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+.loading-text { color:var(--cyan); font-size:14px; letter-spacing:2px; }
+.loading-sub { color:var(--muted); font-size:11px; }
 
-  /* ── CHART ── */
-  .chart-wrap { position:relative; height:180px; }
-
-  /* ── EVENT LOG ── */
-  .log-wrap {
-    height:180px; overflow-y:auto;
-    background:#060f1e; border-radius:6px;
-    padding:10px;
-  }
-  .log-wrap::-webkit-scrollbar { width:4px; }
-  .log-wrap::-webkit-scrollbar-track { background:transparent; }
-  .log-wrap::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-  .log-entry {
-    font-family:var(--mono); font-size:11px; padding:3px 0;
-    border-bottom:1px solid #0d1e35;
-    display:flex; gap:8px; align-items:flex-start;
-  }
-  .log-time  { color:var(--muted); flex-shrink:0; }
-  .log-INFO  { color:var(--cyan); }
-  .log-ALERT { color:var(--red); }
-  .log-SUCCESS { color:var(--green); }
-
-  /* ── NETWORK MAP ── */
-  .network-svg { width:100%; height:200px; display:block; }
+/* ── API KEY MODAL ── */
+#apiModal {
+  position:fixed; inset:0; background:rgba(0,0,0,0.8);
+  display:flex; align-items:center; justify-content:center;
+  z-index:998; backdrop-filter:blur(4px);
+}
+.modal-box {
+  background:var(--panel); border:1px solid var(--cyan);
+  border-radius:12px; padding:28px 32px; width:400px;
+  box-shadow: 0 0 40px rgba(0,245,255,0.2);
+}
+.modal-box h2 { color:#fff; font-size:16px; margin-bottom:6px; font-family:var(--sans); }
+.modal-box p { color:var(--muted); font-size:11px; margin-bottom:16px; font-family:var(--mono); }
+.modal-box input {
+  width:100%; background:#030810; border:1px solid var(--border);
+  color:var(--cyan); padding:10px 14px; border-radius:6px;
+  font-family:var(--mono); font-size:12px; margin-bottom:12px;
+  outline:none;
+}
+.modal-box input:focus { border-color:var(--cyan); }
 </style>
 </head>
 <body>
 
+<div id="loading">
+  <div class="loading-icon">🚦</div>
+  <div class="loading-text">FETCHING TOMTOM TRAFFIC DATA</div>
+  <div class="loading-sub">Connecting to Bangalore intersections...</div>
+</div>
+
 <header>
   <div class="logo">
-    <span class="logo-icon">🚦</span>
+    <div class="logo-icon">🚦</div>
     <div class="logo-text">
-      <h1>IoT Smart Traffic System — Team 3</h1>
-      <p>Real-time monitoring · A* rerouting · Heatmap · Dynamic signals</p>
+      <h1>IoT SMART TRAFFIC SYSTEM — TEAM 3</h1>
+      <p>TomTom Live API · A* Routing · Bangalore, India</p>
     </div>
   </div>
   <div class="header-right">
-    <span class="status-pill"><span class="dot"></span> <span id="sys-status">System Running</span></span>
-    <span class="tick-counter">Tick: <span id="tick-num">0</span> | Re-routes: <span id="reroute-count">0</span></span>
+    <span class="tomtom-badge">TOMTOM LIVE</span>
+    <span class="status-pill"><span class="dot" id="status-dot"></span><span id="sys-status">Connecting...</span></span>
+    <span class="tick-counter" id="tick-counter">Tick: 0 | Re-routes: 0</span>
   </div>
 </header>
 
-<div style="padding:16px 24px 0;">
-  <!-- STAT CARDS -->
-  <div class="stat-grid" style="margin-bottom:16px;">
+<div style="padding:14px 22px 0;">
+  <div class="stat-grid">
     <div class="stat-card">
       <div class="stat-label">Avg Volume</div>
       <div class="stat-value" id="avg-vol">—</div>
-      <div class="stat-sub">veh/min across 4 nodes</div>
+      <div class="stat-sub">veh/min · 4 nodes</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Congestion Index</div>
-      <div class="stat-value" id="cong-index" style="font-size:22px;margin-top:4px;">—</div>
+      <div class="stat-value" id="cong-index" style="font-size:20px;margin-top:6px;">—</div>
       <div class="stat-sub" id="cong-sub">—</div>
     </div>
     <div class="stat-card">
@@ -262,101 +340,98 @@
       <div class="stat-sub">auto diversions</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Signal Mode</div>
-      <div class="stat-value" style="font-size:18px;margin-top:6px;" id="sig-mode">Dynamic</div>
-      <div class="stat-sub">A*-assisted routing</div>
+      <div class="stat-label">TomTom Updates</div>
+      <div class="stat-value" id="stat-updates">0</div>
+      <div class="stat-sub">live API calls</div>
     </div>
   </div>
 
-  <!-- CONTROLS -->
   <div class="btn-row">
-    <button class="btn btn-ghost" id="btn-pause" onclick="togglePause()">⏸ Pause</button>
-    <button class="btn btn-red"   onclick="triggerCongestion('I-A')">🚨 Spike I-A</button>
-    <button class="btn btn-red"   onclick="triggerCongestion('I-D')">🚨 Spike I-D</button>
-    <button class="btn btn-purple" onclick="triggerEmergency('I-A')">🚑 Emergency at I-A</button>
-    <button class="btn btn-ghost"  onclick="resetSim()">↺ Reset</button>
+    <button class="btn btn-ghost" id="btn-pause" onclick="togglePause()">⏸ PAUSE</button>
+    <button class="btn btn-red" onclick="manualCongestion('I-A')">⚡ SPIKE I-A</button>
+    <button class="btn btn-red" onclick="manualCongestion('I-D')">⚡ SPIKE I-D</button>
+    <button class="btn btn-purple" onclick="triggerEmergency('I-A')">🚑 EMERGENCY I-A</button>
+    <button class="btn btn-ghost" onclick="resetSim()">↺ RESET</button>
+    <button class="btn btn-cyan" onclick="forceFetch()">⟳ REFRESH TOMTOM</button>
   </div>
 </div>
 
 <div class="main">
-
-  <!-- LEFT: INTERSECTION GRID -->
+  <!-- LEFT: INTERSECTIONS -->
   <div>
     <div class="panel">
       <div class="panel-header">
-        <span>Intersection Network — 4-Way Grid</span>
+        <span>Intersection Network · Bangalore</span>
+        <span style="color:var(--cyan);">4-NODE GRID</span>
       </div>
       <div class="panel-body">
-        <div class="intersection-grid" id="intersection-grid">
-          <!-- filled by JS -->
-        </div>
+        <div class="intersection-grid" id="intersection-grid"></div>
       </div>
     </div>
   </div>
 
   <!-- MIDDLE: HEATMAP + ROUTES -->
-  <div style="display:flex;flex-direction:column;gap:16px;">
+  <div style="display:flex;flex-direction:column;gap:14px;">
     <div class="panel">
-      <div class="panel-header"><span>Traffic Heatmap</span></div>
+      <div class="panel-header"><span>Traffic Heatmap</span><span style="color:var(--green);font-size:9px;">LIVE</span></div>
       <div class="panel-body" style="padding-bottom:8px;">
         <div class="heatmap-wrap">
           <canvas class="heatmap-canvas" id="heatmap-canvas"></canvas>
         </div>
         <div class="heatmap-legend">
-          <span>Low</span><div class="legend-bar"></div><span>High</span>
+          <span>LOW</span><div class="legend-bar"></div><span>HIGH</span>
         </div>
       </div>
     </div>
-
     <div class="panel">
       <div class="panel-header"><span>Active Routes & Re-routing</span></div>
       <div class="panel-body">
-        <div class="route-list" id="route-list"><!-- filled by JS --></div>
+        <div class="route-list" id="route-list"></div>
       </div>
     </div>
   </div>
 
-  <!-- RIGHT: A* + EVENT LOG -->
-  <div style="display:flex;flex-direction:column;gap:16px;">
+  <!-- RIGHT: A* + LOG -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
     <div class="panel">
       <div class="panel-header"><span>A* Pathfinding Engine</span></div>
       <div class="panel-body">
         <div class="astar-form">
           <select id="astar-start">
-            <option value="I-A">I-A (North)</option>
-            <option value="I-B">I-B (East)</option>
-            <option value="I-C">I-C (West)</option>
-            <option value="I-D">I-D (South)</option>
+            <option value="I-A">I-A (Silk Board)</option>
+            <option value="I-B">I-B (Marathahalli)</option>
+            <option value="I-C">I-C (Hebbal)</option>
+            <option value="I-D">I-D (Electronic City)</option>
           </select>
-          <span style="color:var(--muted)">→</span>
+          <span style="color:var(--muted);">→</span>
           <select id="astar-goal">
-            <option value="I-D" selected>I-D (South)</option>
-            <option value="I-A">I-A (North)</option>
-            <option value="I-B">I-B (East)</option>
-            <option value="I-C">I-C (West)</option>
+            <option value="I-D" selected>I-D (Electronic City)</option>
+            <option value="I-A">I-A (Silk Board)</option>
+            <option value="I-B">I-B (Marathahalli)</option>
+            <option value="I-C">I-C (Hebbal)</option>
           </select>
-          <button class="btn btn-cyan" onclick="runAstar()">▶ Run A*</button>
+          <button class="btn btn-cyan" onclick="runAstar()">▶ RUN</button>
         </div>
         <div class="astar-result" id="astar-result">
-          <span style="color:var(--muted)">Select nodes and click Run A* to find optimal path</span>
+          <span style="color:var(--muted);">Select nodes and click Run A* to find optimal path</span>
         </div>
       </div>
     </div>
-
     <div class="panel" style="flex:1;">
-      <div class="panel-header"><span>Event Log</span></div>
-      <div class="panel-body" style="padding:10px;">
+      <div class="panel-header"><span>Event Log</span><span style="color:var(--muted);font-size:9px;" id="log-count">0 events</span></div>
+      <div class="panel-body" style="padding:8px;">
         <div class="log-wrap" id="event-log">
-          <div style="color:var(--muted);font-family:var(--mono);font-size:11px;">Waiting for events...</div>
+          <div style="color:var(--muted);font-family:var(--mono);font-size:10px;">Initializing TomTom connection...</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- BOTTOM: CHART (full width) -->
+  <!-- BOTTOM: CHART -->
   <div class="col-full panel">
     <div class="panel-header">
-      <span>Traffic Volume Over Time (veh/min) — Red line = HIGH threshold (80)</span>
+      <span>Traffic Volume Over Time (veh/min) — sourced from TomTom Flow API</span>
+      <span style="color:var(--red);font-size:9px;">── HIGH threshold (80)</span>
     </div>
     <div class="panel-body">
       <div class="chart-wrap">
@@ -364,21 +439,364 @@
       </div>
     </div>
   </div>
-
 </div>
 
 <script>
-// ─────────────────────────────────────────
-// CONFIG
-// ─────────────────────────────────────────
-const API = window.location.origin + '/api';
-const COLORS = { 'I-A':'#00d4ff','I-B':'#ffd166','I-C':'#00e5a0','I-D':'#ff4757' };
-let paused = false;
-let chart;
+// ═══════════════════════════════════════════════════
+// CONFIG — TomTom API + Bangalore Intersections
+// ═══════════════════════════════════════════════════
+const TOMTOM_API_KEY = 'h1nqv1QiWWlycVr0xdyqPCK8UsMMSwfZ';
+const TOMTOM_BASE = 'https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json';
 
-// ─────────────────────────────────────────
-// CHART INIT
-// ─────────────────────────────────────────
+// 4 real Bangalore intersection coordinates
+const NODES = {
+  'I-A': { lat: 12.9176,  lng: 77.6227, label: 'Silk Board', x: 0.5, y: 0.2, shortName: 'Silk Bd' },
+  'I-B': { lat: 12.9591,  lng: 77.6972, label: 'Marathahalli', x: 0.9, y: 0.6, shortName: 'Mrthll' },
+  'I-C': { lat: 13.0358,  lng: 77.5970, label: 'Hebbal', x: 0.1, y: 0.9, shortName: 'Hebbal' },
+  'I-D': { lat: 12.8458,  lng: 77.6612, label: 'Electronic City', x: 0.5, y: 0.7, shortName: 'Elec.City' },
+};
+
+const BASE_GRAPH = {
+  'I-A': [['I-B', 5], ['I-C', 8], ['I-D', 4]],
+  'I-B': [['I-A', 5], ['I-D', 6]],
+  'I-C': [['I-A', 8], ['I-D', 7]],
+  'I-D': [['I-A', 4], ['I-B', 6], ['I-C', 7]],
+};
+
+const ROUTES = {
+  'Route 1': ['I-A', 'I-B'],
+  'Route 2': ['I-A', 'I-C'],
+  'Route 3': ['I-C', 'I-D'],
+  'Route 4': ['I-B', 'I-D'],
+};
+
+const THRESHOLD_LOW  = 50;
+const THRESHOLD_HIGH = 80;
+const COLORS = { 'I-A':'#00f5ff','I-B':'#f5c400','I-C':'#00ff9d','I-D':'#ff3c5a' };
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let state = {
+  tick: 0,
+  running: true,
+  rerouteCount: 0,
+  apiCallCount: 0,
+  volumes: { 'I-A': 45, 'I-B': 55, 'I-C': 35, 'I-D': 50 },
+  speeds:  { 'I-A': 0,  'I-B': 0,  'I-C': 0,  'I-D': 0  },
+  freeflowSpeeds: { 'I-A': 0, 'I-B': 0, 'I-C': 0, 'I-D': 0 },
+  congestionFlags: {},
+  history: { 'I-A':[], 'I-B':[], 'I-C':[], 'I-D':[] },
+  ticks: [],
+  eventLog: [],
+  activeRoutes: {
+    'Route 1': { path:['I-A','I-B'], status:'normal' },
+    'Route 2': { path:['I-A','I-C'], status:'normal' },
+    'Route 3': { path:['I-C','I-D'], status:'normal' },
+    'Route 4': { path:['I-B','I-D'], status:'normal' },
+  },
+  astarResult: null,
+  manualSpikes: {},
+  emergencyActive: false,
+  emergencyAt: null,
+};
+
+let chart;
+let pollInterval;
+let tomtomInterval;
+
+// ═══════════════════════════════════════════════════
+// TOMTOM API
+// ═══════════════════════════════════════════════════
+async function fetchTomTomFlow(nodeId) {
+  const node = NODES[nodeId];
+  const url = `${TOMTOM_BASE}?key=${TOMTOM_API_KEY}&point=${node.lat},${node.lng}&unit=KMPH`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const flow = data.flowSegmentData;
+    const currentSpeed   = flow.currentSpeed;
+    const freeFlowSpeed  = flow.freeFlowSpeed;
+    // Convert speed ratio to a vehicle volume proxy
+    // Lower speed ratio = more congestion = higher volume
+    const ratio = Math.max(0.1, currentSpeed / freeFlowSpeed);
+    // Map: ratio 1.0 (free flow) → ~30 veh/min, ratio 0.1 (jam) → ~95 veh/min
+    const volume = Math.round(30 + (1 - ratio) * 72);
+    return { volume, currentSpeed, freeFlowSpeed, success: true };
+  } catch(e) {
+    // Fallback: random walk from current value if API fails
+    const cur = state.volumes[nodeId];
+    const noise = (Math.random() - 0.5) * 12;
+    return { volume: Math.max(10, Math.min(100, Math.round(cur + noise))), currentSpeed: 0, freeFlowSpeed: 0, success: false };
+  }
+}
+
+async function fetchAllTomTom() {
+  logEvent('Fetching TomTom traffic data for all nodes...', 'TOMTOM');
+  const results = await Promise.all(Object.keys(NODES).map(id => fetchTomTomFlow(id)));
+  const nodeIds = Object.keys(NODES);
+  let anySuccess = false;
+
+  nodeIds.forEach((id, i) => {
+    const r = results[i];
+    // Apply manual spike if active
+    let vol = state.manualSpikes[id] ? 92 : r.volume;
+    if (state.manualSpikes[id]) {
+      state.manualSpikes[id]--;
+      if (state.manualSpikes[id] <= 0) delete state.manualSpikes[id];
+    }
+    state.volumes[id] = vol;
+    state.speeds[id] = r.currentSpeed;
+    state.freeflowSpeeds[id] = r.freeFlowSpeed;
+    if (r.success) anySuccess = true;
+  });
+
+  state.apiCallCount++;
+  document.getElementById('stat-updates').textContent = state.apiCallCount;
+
+  if (anySuccess) {
+    logEvent(`TomTom data received — ${nodeIds.map(id=>`${id}:${state.volumes[id]}`).join(' | ')}`, 'TOMTOM');
+    setOnline();
+  } else {
+    logEvent('TomTom API unreachable — using simulated fallback', 'ALERT');
+    setOffline();
+  }
+}
+
+function setOnline() {
+  document.getElementById('sys-status').textContent = 'TomTom Live';
+  document.getElementById('status-dot').className = 'dot';
+}
+function setOffline() {
+  document.getElementById('sys-status').textContent = 'Fallback Mode';
+  document.getElementById('status-dot').className = 'dot offline';
+}
+
+// ═══════════════════════════════════════════════════
+// ALGORITHMS
+// ═══════════════════════════════════════════════════
+function classify(vol) {
+  if (vol < THRESHOLD_LOW)  return 'LOW';
+  if (vol < THRESHOLD_HIGH) return 'MEDIUM';
+  return 'HIGH';
+}
+function signalTime(vol) {
+  if (vol >= THRESHOLD_HIGH) return 60;
+  if (vol >= THRESHOLD_LOW)  return 45;
+  return 30;
+}
+
+function heuristic(a, b) {
+  const na = NODES[a], nb = NODES[b];
+  return Math.sqrt((na.x-nb.x)**2 + (na.y-nb.y)**2);
+}
+
+function buildDynamicGraph(volumes) {
+  const g = {};
+  for (const [node, neighbors] of Object.entries(BASE_GRAPH)) {
+    g[node] = neighbors.map(([nb, bw]) => [nb, bw + (volumes[nb]||0)/10]);
+  }
+  return g;
+}
+
+function astar(start, goal, volumes) {
+  const graph = buildDynamicGraph(volumes);
+  // [fCost, gCost, node, path]
+  const open = [[heuristic(start,goal), 0, start, [start]]];
+  const visited = new Set();
+  while (open.length) {
+    open.sort((a,b) => a[0]-b[0]);
+    const [f, g, cur, path] = open.shift();
+    if (visited.has(cur)) continue;
+    visited.add(cur);
+    if (cur === goal) return { path, cost: Math.round(g*10)/10 };
+    for (const [nb, w] of (graph[cur]||[])) {
+      if (!visited.has(nb)) {
+        const ng = g + w;
+        open.push([ng + heuristic(nb, goal), ng, nb, [...path, nb]]);
+      }
+    }
+  }
+  return { path: null, cost: Infinity };
+}
+
+// ═══════════════════════════════════════════════════
+// SIMULATION TICK
+// ═══════════════════════════════════════════════════
+function tick() {
+  if (!state.running) return;
+  state.tick++;
+
+  // Update history
+  for (const id of Object.keys(NODES)) {
+    state.history[id].push(state.volumes[id]);
+    if (state.history[id].length > 30) state.history[id].shift();
+  }
+  state.ticks.push(state.tick);
+  if (state.ticks.length > 30) state.ticks.shift();
+
+  // Process congestion
+  for (const id of Object.keys(NODES)) {
+    const vol = state.volumes[id];
+    const level = classify(vol);
+
+    if (level === 'HIGH' && !state.congestionFlags[id]) {
+      state.congestionFlags[id] = true;
+      state.rerouteCount++;
+      logEvent(`CONGESTION at ${id} (${NODES[id].label}) — ${vol} veh/min`, 'ALERT');
+
+      // Mark rerouted routes
+      for (const [rname, rdata] of Object.entries(state.activeRoutes)) {
+        if (rdata.path.includes(id)) {
+          state.activeRoutes[rname].status = 'rerouted';
+        } else {
+          state.activeRoutes[rname].status = 'active';
+        }
+      }
+
+      // Auto A*
+      const others = Object.keys(NODES).filter(n => n !== id);
+      if (others.length >= 2) {
+        const res = astar(others[0], others[others.length-1], state.volumes);
+        state.astarResult = { ...res, avoiding: id };
+        if (res.path) logEvent(`A* reroute: ${res.path.join(' → ')} (cost: ${res.cost})`, 'INFO');
+      }
+    }
+
+    if (level !== 'HIGH' && state.congestionFlags[id]) {
+      state.congestionFlags[id] = false;
+      logEvent(`${id} (${NODES[id].label}) congestion cleared`, 'SUCCESS');
+      for (const rname of Object.keys(state.activeRoutes)) {
+        state.activeRoutes[rname].status = 'normal';
+      }
+    }
+  }
+
+  // Emergency
+  if (state.emergencyActive) {
+    logEvent(`🚑 EMERGENCY at ${state.emergencyAt} — All signals overridden to 90s GREEN`, 'ALERT');
+    state.emergencyActive = false;
+  }
+
+  // Update UI
+  updateUI();
+}
+
+// ═══════════════════════════════════════════════════
+// UI UPDATES
+// ═══════════════════════════════════════════════════
+function updateUI() {
+  document.getElementById('tick-counter').textContent =
+    `Tick: ${state.tick} | Re-routes: ${state.rerouteCount}`;
+  document.getElementById('stat-reroute').textContent = state.rerouteCount;
+
+  const vols = Object.values(state.volumes);
+  const avg = Math.round(vols.reduce((a,b)=>a+b,0)/vols.length);
+  document.getElementById('avg-vol').textContent = avg;
+
+  const highCount = vols.filter(v=>v>=80).length;
+  const medCount  = vols.filter(v=>v>=50&&v<80).length;
+  if (highCount > 0) {
+    document.getElementById('cong-index').innerHTML = `<span style="color:var(--red)">HIGH</span>`;
+    document.getElementById('cong-sub').textContent = `${highCount} node(s) congested`;
+  } else if (medCount > 0) {
+    document.getElementById('cong-index').innerHTML = `<span style="color:var(--yellow)">MEDIUM</span>`;
+    document.getElementById('cong-sub').textContent = `${medCount} node(s) moderate`;
+  } else {
+    document.getElementById('cong-index').innerHTML = `<span style="color:var(--green)">LOW</span>`;
+    document.getElementById('cong-sub').textContent = 'All nodes normal';
+  }
+
+  updateGrid();
+  updateRoutes();
+  updateLog();
+  updateChart();
+  drawHeatmap();
+  if (state.astarResult) displayAstar(state.astarResult);
+}
+
+function updateGrid() {
+  const grid = document.getElementById('intersection-grid');
+  grid.innerHTML = '';
+  for (const [id, node] of Object.entries(NODES)) {
+    const vol = state.volumes[id];
+    const level = classify(vol);
+    const signal = signalTime(vol);
+    const speed = state.speeds[id];
+    const freeflow = state.freeflowSpeeds[id];
+    const card = document.createElement('div');
+    card.className = `intersection-card level-${level}`;
+    card.innerHTML = `
+      <div class="i-name">${id}</div>
+      <div class="i-location">${node.label}</div>
+      <div class="i-vol col-${level}">${Math.round(vol)}</div>
+      <div class="i-label">veh/min</div>
+      <div class="i-level col-${level}">${level}</div>
+      <div class="i-signal">Signal: ${signal}s green</div>
+      ${speed > 0 ? `<div class="i-speed">Speed: ${speed} / ${freeflow} km/h</div>` : ''}
+    `;
+    grid.appendChild(card);
+  }
+}
+
+function updateRoutes() {
+  const el = document.getElementById('route-list');
+  el.innerHTML = '';
+  for (const [name, r] of Object.entries(state.activeRoutes)) {
+    const cls = r.status === 'rerouted' ? 'badge-rerouted' :
+                r.status === 'active'   ? 'badge-active' : 'badge-normal';
+    const label = r.status === 'rerouted' ? '⚠ Re-routed' :
+                  r.status === 'active'   ? '→ Active' : '✓ Normal';
+    el.innerHTML += `
+      <div class="route-item">
+        <span class="route-name">${name}</span>
+        <span class="route-path">${r.path[0]} → ${r.path[1]}</span>
+        <span class="route-badge ${cls}">${label}</span>
+      </div>`;
+  }
+}
+
+function updateLog() {
+  const el = document.getElementById('event-log');
+  const count = document.getElementById('log-count');
+  count.textContent = `${state.eventLog.length} events`;
+  el.innerHTML = [...state.eventLog].reverse().map(e =>
+    `<div class="log-entry">
+      <span class="log-time">${e.time}</span>
+      <span class="log-${e.level}">[${e.level}]</span>
+      <span>${e.message}</span>
+    </div>`
+  ).join('');
+}
+
+function logEvent(msg, level='INFO') {
+  const now = new Date();
+  const time = now.toTimeString().slice(0,8);
+  state.eventLog.push({ time, level, message: msg });
+  if (state.eventLog.length > 60) state.eventLog.shift();
+}
+
+function displayAstar(result) {
+  const el = document.getElementById('astar-result');
+  if (!result || !result.path) {
+    el.innerHTML = '<span style="color:var(--muted)">No path found</span>';
+    return;
+  }
+  const pathHTML = result.path.map((n,i) =>
+    `<span class="path-node">${n}</span>${i < result.path.length-1 ? '<span class="path-arrow">→</span>' : ''}`
+  ).join('');
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;margin-bottom:8px;">${pathHTML}</div>
+    <div style="font-size:9px;color:var(--muted);">
+      Cost: <span style="color:var(--cyan)">${result.cost}</span>
+      ${result.avoiding ? ` | Avoiding: <span style="color:var(--red)">${result.avoiding}</span>` : ''}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// CHART
+// ═══════════════════════════════════════════════════
 function initChart() {
   const ctx = document.getElementById('traffic-chart').getContext('2d');
   chart = new Chart(ctx, {
@@ -386,12 +804,12 @@ function initChart() {
     data: {
       labels: [],
       datasets: [
-        ...['I-A','I-B','I-C','I-D'].map(id => ({
-          label: id,
+        ...Object.keys(NODES).map(id => ({
+          label: `${id} (${NODES[id].shortName})`,
           data: [],
           borderColor: COLORS[id],
-          backgroundColor: COLORS[id] + '15',
-          borderWidth: 2,
+          backgroundColor: COLORS[id] + '18',
+          borderWidth: 1.5,
           pointRadius: 0,
           tension: 0.4,
           fill: false,
@@ -399,8 +817,8 @@ function initChart() {
         {
           label: 'HIGH threshold',
           data: [],
-          borderColor: '#ff4757',
-          borderDash: [6,4],
+          borderColor: '#ff3c5a66',
+          borderDash: [5,4],
           borderWidth: 1,
           pointRadius: 0,
           fill: false,
@@ -410,270 +828,163 @@ function initChart() {
     options: {
       responsive: true, maintainAspectRatio: false,
       animation: false,
-      plugins: { legend: { labels: { color:'#4a6080', font:{size:11} } } },
+      plugins: { legend: { labels: { color:'#3d5a7a', font:{size:10, family:'Share Tech Mono'} } } },
       scales: {
-        x: { ticks:{ color:'#4a6080', maxTicksLimit:10 }, grid:{ color:'#0d1e35' } },
-        y: { ticks:{ color:'#4a6080' }, grid:{ color:'#0d1e35' }, min:0, max:110 }
+        x: { ticks:{ color:'#3d5a7a', maxTicksLimit:10, font:{family:'Share Tech Mono',size:10} }, grid:{ color:'#07111f' } },
+        y: { ticks:{ color:'#3d5a7a', font:{family:'Share Tech Mono',size:10} }, grid:{ color:'#07111f' }, min:0, max:110 }
       }
     }
   });
 }
 
-function updateChart(history) {
-  const ticks = history.ticks || [];
-  chart.data.labels = ticks.map(t => `T${t}`);
-  ['I-A','I-B','I-C','I-D'].forEach((id, i) => {
-    chart.data.datasets[i].data = history.data[id] || [];
+function updateChart() {
+  chart.data.labels = state.ticks.map(t => `T${t}`);
+  Object.keys(NODES).forEach((id, i) => {
+    chart.data.datasets[i].data = state.history[id];
   });
-  chart.data.datasets[4].data = ticks.map(() => history.threshold_high || 80);
+  chart.data.datasets[4].data = state.ticks.map(() => 80);
   chart.update('none');
 }
 
-// ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════
 // HEATMAP
-// ─────────────────────────────────────────
-function drawHeatmap(nodes) {
+// ═══════════════════════════════════════════════════
+function drawHeatmap() {
   const canvas = document.getElementById('heatmap-canvas');
   const ctx = canvas.getContext('2d');
   const W = canvas.offsetWidth, H = canvas.offsetHeight;
   canvas.width = W; canvas.height = H;
-  ctx.clearRect(0, 0, W, H);
+  ctx.clearRect(0,0,W,H);
 
-  // Map logical coords (0-1) to canvas
-  const px = (x, y) => ({
-    cx: 60 + x * (W - 120),
-    cy: H - 50 - y * (H - 100)
-  });
+  const px = (x,y) => ({ cx: 30 + x*(W-60), cy: H-30 - y*(H-60) });
 
-  // Draw road lines between connected nodes
-  const edges = [['I-A','I-B'],['I-A','I-C'],['I-B','I-D'],['I-C','I-D']];
-  const nodeMap = {};
-  nodes.forEach(n => { nodeMap[n.id] = n; });
-
-  edges.forEach(([a, b]) => {
-    const na = nodeMap[a], nb = nodeMap[b];
-    if (!na || !nb) return;
-    const pa = px(na.x, na.y), pb = px(nb.x, nb.y);
+  // Draw edges
+  const edges = [['I-A','I-B'],['I-A','I-C'],['I-A','I-D'],['I-B','I-D'],['I-C','I-D']];
+  const nm = {};
+  Object.keys(NODES).forEach(id => { nm[id] = NODES[id]; });
+  edges.forEach(([a,b]) => {
+    const pa = px(nm[a].x, nm[a].y), pb = px(nm[b].x, nm[b].y);
     ctx.beginPath();
     ctx.moveTo(pa.cx, pa.cy);
     ctx.lineTo(pb.cx, pb.cy);
-    ctx.strokeStyle = '#1a2d50';
-    ctx.lineWidth = 6;
+    ctx.strokeStyle = '#112240';
+    ctx.lineWidth = 4;
     ctx.stroke();
   });
 
-  // Draw heatmap blobs + node circles
-  nodes.forEach(n => {
-    const {cx, cy} = px(n.x, n.y);
-    const r = 50 * n.intensity + 20;
-    const color = n.level === 'HIGH' ? '#ff4757' : n.level === 'MEDIUM' ? '#ffd166' : '#00e5a0';
+  // Draw nodes
+  Object.keys(NODES).forEach(id => {
+    const node = NODES[id];
+    const {cx, cy} = px(node.x, node.y);
+    const vol = state.volumes[id];
+    const level = classify(vol);
+    const color = level==='HIGH' ? '#ff3c5a' : level==='MEDIUM' ? '#f5c400' : '#00ff9d';
+    const r = 40 + (vol/100)*30;
 
     // Glow
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    grad.addColorStop(0, color + '88');
-    grad.addColorStop(1, color + '00');
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI*2);
-    ctx.fillStyle = grad;
-    ctx.fill();
+    const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+    grad.addColorStop(0, color+'66');
+    grad.addColorStop(1, color+'00');
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.fillStyle = grad; ctx.fill();
 
     // Circle
-    ctx.beginPath();
-    ctx.arc(cx, cy, 18, 0, Math.PI*2);
-    ctx.fillStyle = color;
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,16,0,Math.PI*2);
+    ctx.fillStyle = color+'33';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.fill(); ctx.stroke();
 
-    // Label
+    // ID
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 9px JetBrains Mono';
+    ctx.font = 'bold 9px Share Tech Mono';
     ctx.textAlign = 'center';
-    ctx.fillText(n.id, cx, cy + 3);
+    ctx.fillText(id, cx, cy+3);
 
     // Volume
     ctx.fillStyle = color;
-    ctx.font = 'bold 11px Space Grotesk';
-    ctx.fillText(Math.round(n.volume), cx, cy + 28);
+    ctx.font = '10px Share Tech Mono';
+    ctx.fillText(Math.round(vol), cx, cy+24);
   });
 }
 
-// ─────────────────────────────────────────
-// INTERSECTION GRID
-// ─────────────────────────────────────────
-function updateGrid(intersections) {
-  const grid = document.getElementById('intersection-grid');
-  grid.innerHTML = '';
-  const order = ['I-A','I-B','I-C','I-D'];
-  order.forEach(id => {
-    const d = intersections[id];
-    if (!d) return;
-    const card = document.createElement('div');
-    card.className = `intersection-card level-${d.level}`;
-    card.innerHTML = `
-      <div class="i-name">${id} (${d.label})</div>
-      <div class="i-vol col-${d.level}">${Math.round(d.volume)}</div>
-      <div class="i-label">veh/min</div>
-      <div class="i-level col-${d.level}">${d.level}</div>
-      <div class="i-signal">Signal: ${d.signal}s green</div>
-    `;
-    grid.appendChild(card);
-  });
-}
-
-// ─────────────────────────────────────────
-// ROUTES
-// ─────────────────────────────────────────
-function updateRoutes(routes) {
-  const el = document.getElementById('route-list');
-  el.innerHTML = '';
-  Object.entries(routes).forEach(([name, r]) => {
-    const status = r.status || 'normal';
-    const [src, dst] = r.path || ['?','?'];
-    const badgeClass = status === 'rerouted' ? 'badge-rerouted' : status === 'active' ? 'badge-active' : 'badge-normal';
-    const badgeText  = status === 'rerouted' ? '⚠ Re-routed' : status === 'active' ? '→ Active' : '✓ Normal';
-    el.innerHTML += `
-      <div class="route-item">
-        <span class="route-name">${name}</span>
-        <span class="route-path">${src} → ${dst}</span>
-        <span class="route-badge ${badgeClass}">${badgeText}</span>
-      </div>`;
-  });
-}
-
-// ─────────────────────────────────────────
-// EVENT LOG
-// ─────────────────────────────────────────
-function updateLog(events) {
-  const el = document.getElementById('event-log');
-  el.innerHTML = events.map(e => `
-    <div class="log-entry">
-      <span class="log-time">${e.time}</span>
-      <span class="log-${e.level}">[${e.level}]</span>
-      <span>${e.message}</span>
-    </div>`).reverse().join('');
-}
-
-// ─────────────────────────────────────────
-// STATS
-// ─────────────────────────────────────────
-function updateStats(intersections, rerouteCount) {
-  const vols = Object.values(intersections).map(d => d.volume);
-  const avg = vols.reduce((a,b)=>a+b,0)/vols.length;
-  document.getElementById('avg-vol').textContent = Math.round(avg);
-  document.getElementById('stat-reroute').textContent = rerouteCount;
-  document.getElementById('reroute-count').textContent = rerouteCount;
-
-  const highCount = vols.filter(v => v >= 80).length;
-  const medCount  = vols.filter(v => v >= 50 && v < 80).length;
-  let index, sub;
-  if (highCount > 0) {
-    index = '<span style="color:var(--red)">HIGH</span>';
-    sub = `${highCount} intersection(s) congested`;
-  } else if (medCount > 0) {
-    index = '<span style="color:var(--yellow)">MEDIUM</span>';
-    sub = `${medCount} intersection(s) moderate`;
-  } else {
-    index = '<span style="color:var(--green)">LOW</span>';
-    sub = 'All intersections normal';
-  }
-  document.getElementById('cong-index').innerHTML = index;
-  document.getElementById('cong-sub').textContent = sub;
-}
-
-// ─────────────────────────────────────────
-// A* DISPLAY
-// ─────────────────────────────────────────
-function displayAstar(result) {
-  const el = document.getElementById('astar-result');
-  if (!result || !result.path) {
-    el.innerHTML = '<span style="color:var(--muted)">No path found</span>';
-    return;
-  }
-  const pathHTML = result.path.map((n,i) => {
-    const arrow = i < result.path.length-1 ? '<span class="path-arrow">→</span>' : '';
-    return `<span class="path-node">${n}</span>${arrow}`;
-  }).join('');
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:10px;">${pathHTML}</div>
-    <div style="font-size:10px;color:var(--muted)">
-      Cost: <span style="color:var(--cyan)">${result.cost}</span>
-      ${result.avoiding ? ` | Avoiding: <span style="color:var(--red)">${result.avoiding}</span>` : ''}
-    </div>`;
-}
-
-// ─────────────────────────────────────────
-// MAIN POLL LOOP
-// ─────────────────────────────────────────
-async function poll() {
-  try {
-    const [statusRes, heatmapRes, historyRes] = await Promise.all([
-      fetch(`${API}/status`),
-      fetch(`${API}/heatmap`),
-      fetch(`${API}/history`),
-    ]);
-    const status  = await statusRes.json();
-    const heatmap = await heatmapRes.json();
-    const history = await historyRes.json();
-
-    document.getElementById('tick-num').textContent = status.tick;
-    updateGrid(status.intersections);
-    updateRoutes(status.active_routes);
-    updateLog(status.event_log);
-    updateStats(status.intersections, status.reroute_count);
-    drawHeatmap(heatmap);
-    updateChart(history);
-    if (status.astar_result) displayAstar(status.astar_result);
-
-  } catch(e) {
-    document.getElementById('sys-status').textContent = '⚠ Backend offline';
-  }
-}
-
-// ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════
 // CONTROLS
-// ─────────────────────────────────────────
-async function togglePause() {
-  await fetch(`${API}/pause`, {method:'POST'});
+// ═══════════════════════════════════════════════════
+let paused = false;
+function togglePause() {
   paused = !paused;
-  const btn = document.getElementById('btn-pause');
-  btn.textContent = paused ? '▶ Resume' : '⏸ Pause';
-  document.getElementById('sys-status').textContent = paused ? 'Paused' : 'System Running';
+  state.running = !paused;
+  document.getElementById('btn-pause').textContent = paused ? '▶ RESUME' : '⏸ PAUSE';
+  logEvent(paused ? 'Simulation paused' : 'Simulation resumed', 'INFO');
 }
-
-async function triggerCongestion(inter) {
-  await fetch(`${API}/congestion`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({intersection: inter})
-  });
+function manualCongestion(id) {
+  state.manualSpikes[id] = 5; // spike for 5 ticks
+  state.volumes[id] = 92;
+  logEvent(`Manual congestion spike at ${id}`, 'ALERT');
 }
-
-async function triggerEmergency(inter) {
-  await fetch(`${API}/emergency`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({intersection: inter})
-  });
+function triggerEmergency(id) {
+  state.emergencyActive = true;
+  state.emergencyAt = id;
+  logEvent(`Emergency vehicle dispatched to ${id}`, 'ALERT');
 }
-
-async function resetSim() {
-  await fetch(`${API}/reset`, {method:'POST'});
+function resetSim() {
+  state.tick = 0;
+  state.rerouteCount = 0;
+  state.apiCallCount = 0;
+  state.volumes = { 'I-A':45,'I-B':55,'I-C':35,'I-D':50 };
+  state.history = {'I-A':[],'I-B':[],'I-C':[],'I-D':[]};
+  state.ticks = [];
+  state.eventLog = [];
+  state.congestionFlags = {};
+  state.astarResult = null;
+  state.manualSpikes = {};
+  for (const r of Object.keys(state.activeRoutes)) {
+    state.activeRoutes[r].status = 'normal';
+  }
+  document.getElementById('astar-result').innerHTML =
+    '<span style="color:var(--muted)">Select nodes and click Run A* to find optimal path</span>';
+  logEvent('System reset', 'SUCCESS');
 }
-
-async function runAstar() {
+async function forceFetch() {
+  logEvent('Manual TomTom refresh triggered', 'TOMTOM');
+  await fetchAllTomTom();
+  updateUI();
+}
+function runAstar() {
   const start = document.getElementById('astar-start').value;
   const goal  = document.getElementById('astar-goal').value;
-  const res   = await fetch(`${API}/astar`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({start, goal})
-  });
-  const data = await res.json();
-  displayAstar(data);
+  const result = astar(start, goal, state.volumes);
+  state.astarResult = result;
+  displayAstar(result);
+  logEvent(`Manual A*: ${start}→${goal} = ${result.path ? result.path.join('→') : 'no path'} (cost:${result.cost})`, 'INFO');
 }
 
-// ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════
 // BOOT
-// ─────────────────────────────────────────
-initChart();
-poll();
-setInterval(poll, 1000);
+// ═══════════════════════════════════════════════════
+async function init() {
+  initChart();
+  logEvent('System initializing...', 'INFO');
+  logEvent('Connecting to TomTom Traffic Flow API...', 'TOMTOM');
+
+  // First TomTom fetch
+  await fetchAllTomTom();
+
+  // Hide loading
+  document.getElementById('loading').style.display = 'none';
+
+  // Initial tick and render
+  tick();
+
+  // Poll TomTom every 30 seconds (respectful of API rate limits)
+  tomtomInterval = setInterval(fetchAllTomTom, 30000);
+
+  // Simulation tick every 2 seconds
+  pollInterval = setInterval(tick, 2000);
+}
+
+init();
 </script>
 </body>
 </html>
